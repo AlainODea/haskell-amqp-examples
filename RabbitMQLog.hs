@@ -15,20 +15,12 @@ example_agentMain = do
 
 runExample :: (Channel -> IO a) -> IO ()
 runExample example = do
-  conn <- getConn
-  chan <- getChan conn
+  conn <- openConnection "127.0.0.1" "/" "guest" "guest"
+  chan <- openChannel conn
   example chan
   getLine -- wait for keypress
   closeConnection conn
 
-getConn :: IO Connection
-getConn = do
-  openConnection "127.0.0.1" "/" "guest" "guest"
-
-getChan :: Connection -> IO Channel
-getChan conn = do
-  openChannel conn
-  
 runAgent :: Channel -> IO ConsumerTag
 runAgent chan = do
   (myQueue, _, _) <- declareQueue chan newQueue
