@@ -3,30 +3,50 @@
 import Network.AMQP
 import qualified Data.ByteString.Lazy.Char8 as BL
 
+main :: IO ()
 main = do
-    conn <- openConnection "127.0.0.1" "/" "guest" "guest"
-    chan <- openChannel conn
+  example_agentMain
 
-    -- declare a queue, exchange and binding
-    (myQueue, _, _) <- declareQueue chan newQueue
-    declareExchange chan newExchange {exchangeName = "myExchange", exchangeType = "fanout"}
-    bindQueue chan myQueue "myExchange" "myKey"
+example_stopAllTomcats = do
+  runExample $ sendToAgents "stop all tomcats"
 
-    -- subscribe to the queue
-    consumeMsgs chan myQueue Ack myCallback
+example_agentMain = do
+  runExample runAgent
 
-    -- publish a message to our new exchange
-    publishMsg chan "myExchange" "myKey"
-        newMsg {msgBody = (BL.pack "hello world"),
-                msgDeliveryMode = Just Persistent}
+runExample :: (Channel -> IO a) -> IO ()
+runExample example = do
+  conn <- getConn
+  chan <- getChan conn
+  example chan
+  getLine -- wait for keypress
+  closeConnection conn
 
-    getLine -- wait for keypress
-    closeConnection conn
-    putStrLn "connection closed"
+getConn :: IO Connection
+getConn = do
+  openConnection "127.0.0.1" "/" "guest" "guest"
 
+getChan :: Connection -> IO Channel
+getChan conn = do
+  openChannel conn
+  
+runAgent :: Channel -> IO ConsumerTag
+runAgent chan = do
+  (myQueue, _, _) <- declareQueue chan newQueue
+  declareExchange chan newExchange {
+    exchangeName = allAgents, exchangeType = "fanout"}
+  bindQueue chan myQueue allAgents routingKey
+  consumeMsgs chan myQueue Ack myCallback
 
+allAgents = "allAgents"
+routingKey = "myKey"
+
+sendToAgents :: String -> Channel -> IO ()
+sendToAgents msg chan = do
+  publishMsg chan allAgents routingKey
+      newMsg {msgBody = (BL.pack msg),
+              msgDeliveryMode = Just Persistent}
+  
 myCallback :: (Message,Envelope) -> IO ()
 myCallback (msg, env) = do
-    putStrLn $ "received message: " ++ (BL.unpack $ msgBody msg)
-    -- acknowledge receiving the message
-    ackEnv env
+  putStrLn $ "received message: " ++ (BL.unpack $ msgBody msg)
+  ackEnv env
