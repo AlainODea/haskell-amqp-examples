@@ -1,0 +1,27 @@
+name:                amqp-example
+version:             0.1.0.0
+synopsis:            AMQP Example
+-- description:         
+homepage:            http://blog.alainodea.com/
+license:             Apache-2.0
+license-file:        LICENSE
+author:              Alain O'Dea
+maintainer:          alain.odea@gmail.com
+-- copyright:           
+category:            Library
+build-type:          Simple
+cabal-version:       >=1.8
+
+executable amqp-example
+  extensions: GeneralizedNewtypeDeriving
+            , MultiParamTypeClasses
+            , OverloadedStrings
+            , TypeFamilies
+            , TypeSynonymInstances
+  main-is:
+    RabbitMQLog.hs
+  -- other-modules:       
+  build-depends: base ==4.6.*
+               , amqp ==0.7.*
+               , bytestring ==0.10.*
+               , text ==0.11.*
