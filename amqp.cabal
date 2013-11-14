@@ -18,10 +18,13 @@ executable amqp-example
             , OverloadedStrings
             , TypeFamilies
             , TypeSynonymInstances
+            , OverloadedStrings
+            , ExtendedDefaultRules
   main-is:
-    RabbitMQLog.hs
+    Main.hs
   -- other-modules:       
   build-depends: base ==4.6.*
                , amqp ==0.7.*
                , bytestring ==0.10.*
                , text ==0.11.*
+               , shelly ==1.3.*
